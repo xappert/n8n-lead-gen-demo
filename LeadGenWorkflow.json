@@ -1,0 +1,151 @@
+{
+    "name": "Lead Generation Demo (Typeform)",
+    "nodes": [
+      {
+        "parameters": {},
+        "name": "Start",
+        "type": "n8n-nodes-base.start",
+        "typeVersion": 1,
+        "position": [
+          250,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "path": "lead-inquiry",
+          "options": {}
+        },
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [
+          400,
+          300
+        ],
+        "webhookId": "b8f5223e-89a3-4811-9c60-e7f09a1a2e3a"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "number": [
+              {
+                "value1": "={{$json.body.form_response.answers[3].number}}",
+                "operation": "larger",
+                "value2": 50
+              }
+            ]
+          }
+        },
+        "name": "Qualify: Size > 50?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          620,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "channel": "YOUR_SLACK_CHANNEL_ID",
+          "text": "=🚀 *New Qualified Lead!* 🚀\n*Name:* {{$json.body.form_response.answers[0].text}}\n*Email:* {{$json.body.form_response.answers[1].email}}\n*Company:* {{$json.body.form_response.answers[2].text}}\n*Size:* {{$json.body.form_response.answers[3].number}} employees",
+          "options": {}
+        },
+        "name": "Notify Sales on Slack",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 1,
+        "position": [
+          840,
+          200
+        ],
+        "credentials": {
+          "slack": {
+            "id": "YOUR_SLACK_CREDENTIAL_ID",
+            "name": "Slack account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sheetId": "YOUR_GOOGLE_SHEET_ID",
+          "range": "Sheet1",
+          "options": {}
+        },
+        "name": "Log Lead in GSheet",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 3,
+        "position": [
+          840,
+          300
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "YOUR_GOOGLE_CREDENTIAL_ID",
+            "name": "Google account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "to": "={{$json.body.form_response.answers[1].email}}",
+          "subject": "=Thanks for your interest, {{$json.body.form_response.answers[0].text}}!",
+          "html": "Hi {{$json.body.form_response.answers[0].text}},<br><br>Thanks for reaching out! We've received your inquiry and someone from our team will get back to you shortly.<br><br>Best,<br>The Team",
+          "options": {}
+        },
+        "name": "Send Confirmation Email",
+        "type": "n8n-nodes-base.googleMail",
+        "typeVersion": 1,
+        "position": [
+          840,
+          400
+        ],
+        "credentials": {
+          "googleMailOAuth2Api": {
+            "id": "YOUR_GOOGLE_CREDENTIAL_ID",
+            "name": "Google account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Qualify: Size > 50?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Qualify: Size > 50?": {
+        "main": [
+          [
+            {
+              "node": "Notify Sales on Slack",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log Lead in GSheet",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send Confirmation Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {},
+    "id": "1"
+  }

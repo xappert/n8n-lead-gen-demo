@@ -1,0 +1,10 @@
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - WEBHOOK_URL=https://n8n-demo-service-986229052130.us-west1.run.app # Or your actual URL
+      - TZ=America/Vancouver

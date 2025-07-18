@@ -1,0 +1,52 @@
+apiVersion: serving.knative.dev/v1 # CORRECTED: "knative" not "knovice"
+kind: Service
+metadata:
+  name: n8n-demo-service
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      containers:
+        - image: docker.io/n8nio/n8n:1.45.1
+          ports:
+            - containerPort: 5678
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: "1"
+          env:
+            - name: N8N_PROTOCOL
+              value: https
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_HOST
+              value: n8n-demo-service-986229052130.us-west1.run.app
+            - name: WEBHOOK_URL
+              value: https://n8n-demo-service-986229052130.us-west1.run.app/
+            - name: DB_TYPE
+              value: sqlite
+            - name: DB_SQLITE_FILENAME
+              value: /tmp/database.sqlite
+            - name: TZ
+              value: America/Vancouver
+            - name: N8N_LOG_LEVEL
+              value: debug
+          
+          startupProbe:
+            timeoutSeconds: 10
+            periodSeconds: 15
+            failureThreshold: 20 
+            httpGet:
+              path: /healthz
+              port: 5678
+          livenessProbe:
+            timeoutSeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: 5678
