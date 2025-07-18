@@ -11,7 +11,7 @@ spec:
       containerConcurrency: 80
       timeoutSeconds: 300
       containers:
-        - image: docker.io/n8nio/n8n:1.45.1
+        - image: docker.io/n8nio/n8n:latest
           ports:
             - containerPort: 5678
           resources:
